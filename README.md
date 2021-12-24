@@ -64,7 +64,7 @@ Optional requirements: `ffmpeg-python` to use video input/output (requires ffmpe
 - `--crf`: The crf (quality) of the output video when using video input/output. Defaults to 0 (lossless)
 - `--exp`: RIFE exponential interpolation amount
 - `--fp16`: Speedup on RTX cards using HalfTensors
-- `--exr`: output fp32 images in .exr format (will me affected by fp16)
+- `--exr`: output fp32 images in .exr format (will be affected by fp16)
 
 ## Planned architecture support
 
