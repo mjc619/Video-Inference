@@ -2,6 +2,7 @@ from utils.io_classes.base_io import BaseIO
 
 import numpy as np
 import cv2
+import pyexr
 import os
 
 
@@ -31,20 +32,31 @@ class ImageIO(BaseIO):
                     images.append(os.path.join(root, file))
         self.feed_data(images)
 
-    def save_frames(self, frames):
+    def save_frames(self, frames, exr):
         """
         Save frame data as images.
 
         Arguments:
             frames (ndarray, list): The image data to be written
         """
+        self.exr = exr
+        
         if not isinstance(frames, list):
             frames = [frames]
         # TODO: Re-add ability to save with original name
-        for img in frames:
-            cv2.imwrite(os.path.join(self.output_path,
+        if self.exr is True:
+            for img in frames:
+                pyexr.write(os.path.join(self.output_path,
+                                     f'{(self.count):08}.exr'), img)
+
+                self.count += 1
+        else:
+            for img in frames:
+                cv2.imwrite(os.path.join(self.output_path,
                                      f'{(self.count):08}.png'), img)
-            self.count += 1
+                self.count += 1
+        
+        
 
     def __getitem__(self, idx):
         return cv2.imread(self.data[idx], cv2.IMREAD_COLOR)

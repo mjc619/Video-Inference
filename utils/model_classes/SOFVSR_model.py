@@ -50,6 +50,7 @@ class SOFVSRModel(BaseModel):
     def inference(self, LR_list, args):
         denoise=args.denoise
         chop_forward=args.chop_forward
+        exr=args.exr
 
         num_padding = (self.num_frames - 1) // 2
         LR_bicubic = None
@@ -143,9 +144,14 @@ class SOFVSRModel(BaseModel):
                 sr_img = ycbcr_to_rgb(torch.stack((SR, SR_cb, SR_cr), -3))
             else:
                 sr_img = SR
-
-        sr_img = util.tensor2np(sr_img)  # uint8
-        self.io.save_frames(sr_img)
+                
+        if exr is True:
+            sr_img = util.tensor2np(sr_img, rgb2bgr= False, change_range= False , data_range = 1., imtype=np.float32)
+        else:
+            sr_img = util.tensor2np(sr_img)  # uint8 default
+            
+        #print(f'/n {sr_img = }')
+        self.io.save_frames(sr_img, exr)
 
     def chop_forward(self, x, model, scale, shave=16, min_size=5000, nGPUs=1):
         # divide into 4 patches

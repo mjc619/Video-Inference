@@ -20,6 +20,8 @@ parser.add_argument('--exp', default=1, type=int,
                     help='RIFE exponential interpolation amount')
 parser.add_argument('--fp16', action='store_true',
                     help='Use floating-point 16 mode for faster inference')
+parser.add_argument('--exr', action='store_true',
+                    help='Use EXR format for output')
 args = parser.parse_args()
 
 is_video = False
