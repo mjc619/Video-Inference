@@ -68,6 +68,9 @@ def main():
 
     # Pad beginning and end frames so they get included in output
     io.pad_data(model.num_padding)
+    
+    #
+    
 
     # Pass i/o into model
     model.set_io(io)

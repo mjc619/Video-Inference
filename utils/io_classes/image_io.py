@@ -28,8 +28,11 @@ class ImageIO(BaseIO):
         images = []
         for root, _, files in os.walk(input_folder):
             for file in sorted(files):
-                if file.split('.')[-1].lower() in ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'tga']:
+                if file.split('.')[-1].lower() in ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'tga', 'exr']:
                     images.append(os.path.join(root, file))
+                if file.split('.')[-1].lower() in ['exr']:
+                    self.in_exr = True
+                else: self.in_exr = False
         self.feed_data(images)
 
     def save_frames(self, frames, exr):
@@ -46,8 +49,10 @@ class ImageIO(BaseIO):
         # TODO: Re-add ability to save with original name
         if self.exr is True:
             for img in frames:
-                pyexr.write(os.path.join(self.output_path,
-                                     f'{(self.count):08}.exr'), img)
+                pyexr.write(os.path.join(self.output_path, 
+                                     f'{(self.count):08}.exr'), img,
+                                     precision = pyexr.HALF, 
+                                     compression = pyexr.PXR24_COMPRESSION)
 
                 self.count += 1
         else:
@@ -59,4 +64,8 @@ class ImageIO(BaseIO):
         
 
     def __getitem__(self, idx):
-        return cv2.imread(self.data[idx], cv2.IMREAD_COLOR)
+        if self.in_exr is True:
+            pytest= pyexr.open(self.data[idx])
+            return pytest.get('default')
+        else:
+            return cv2.imread(self.data[idx], cv2.IMREAD_COLOR)

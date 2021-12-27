@@ -85,6 +85,25 @@ class SOFVSRModel(BaseModel):
                 LR_bicubic, bgr2rgb=False, add_batch=True)
             if args.fp16:
                 LR_bicubic = LR_bicubic.half()
+        elif self.io[1].dtype == 'float32':
+            h_LR, w_LR, c = LR_list[0].shape
+            t = self.num_frames
+            # list -> numpy # input: list (contatin numpy: [H,W,C])
+            LR = [np.asarray(LT) for LT in LR_list]
+            LR = np.asarray(LR)  # numpy, [T,H,W,C]
+            LR = LR.transpose(1, 2, 3, 0).reshape(
+                h_LR, w_LR, -1)  # numpy, [Hl',Wl',CT]
+
+            # Tensor, [CT',H',W'] or [T, H, W]
+            LR = util.np2tensor(LR, bgr2rgb=True, add_batch=False, change_range=False)
+            LR = LR.view(c, t, h_LR, w_LR)  # Tensor, [C,T,H,W]
+            LR = LR.transpose(0, 1)  # Tensor, [T,C,H,W]
+            if args.fp16:
+                LR = LR.half()
+            LR = LR.unsqueeze(0)
+
+            LR_bicubic = []
+            
         else:
             # TODO: Figure out why this is necessary
             LR_list = [cv2.cvtColor(LR_img, cv2.COLOR_BGR2RGB) for LR_img in LR_list]
@@ -146,7 +165,7 @@ class SOFVSRModel(BaseModel):
                 sr_img = SR
                 
         if exr is True:
-            sr_img = util.tensor2np(sr_img, rgb2bgr= False, change_range= False , data_range = 1., imtype=np.float32)
+            sr_img = util.tensor2np(sr_img, rgb2bgr= False, change_range= False , data_range = 1., imtype=np.float16)
         else:
             sr_img = util.tensor2np(sr_img)  # uint8 default
             
